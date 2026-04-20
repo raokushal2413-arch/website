@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClockStore - Premium Clocks E-Commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-black/50 backdrop-blur-md z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">ClockStore</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="googleLogin" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition-all duration-300">Sign in with Google</button>
+                    <button id="logout" class="hidden bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-all duration-300">Logout</button>
+                    <div id="userEmail" class="hidden text-sm"></div>
+                    <button id="cartBtn" class="relative bg-blue-500 hover:bg-blue-600 p-2 rounded-full transition-all duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1 3h10l-1-3M16 21a2 2 0 100-4 2 2 0 000 4z"></path>
+                        </svg>
+                        <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full w-6 h-6 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="pt-24 pb-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+<h2 class="text-5xl md:text-7xl font-bold mb-6 opacity-100 animate-fade-in" data-gsap="hero-title">Premium Clocks Collection</h2>
+            <p class="text-xl md:text-2xl mb-8 opacity-0" data-gsap="hero-subtitle">Discover timeless elegance with our curated selection of wall clocks, alarm clocks, and smartwatches.</p>
+            <button id="shopBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-12 py-4 rounded-full text-xl font-semibold transition-all duration-500 transform hover:scale-105 shadow-2xl opacity-0" data-gsap="hero-cta">Shop Now</button>
+        </div>
+    </section>
+
+    <!-- Products -->
+    <section id="products-section" class="px-4 py-20 bg-black/30">
+        <div class="max-w-7xl mx-auto">
+<h3 class="text-4xl font-bold text-center mb-16 animate-fade-in" data-gsap="products-title">Our Collection</h3>
+            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Products loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300">
+        <div class="max-w-2xl mx-auto mt-20 p-8 bg-gray-900/90 rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Shopping Cart</h3>
+                <button id="closeCart" class="text-xl hover:text-red-400 transition-colors">×</button>
+            </div>
+            <div id="cartItems" class="mb-6"></div>
+            <div class="flex justify-between items-center text-xl font-bold mb-6">
+                <span>Total: $<span id="cartTotal">0</span></span>
+            </div>
+            <button id="checkoutBtn" class="w-full bg-green-500 hover:bg-green-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50" disabled>Checkout with Stripe</button>
+        </div>
+    </div>
+
+    <!-- Admin Add Product (for logged in admins - stub) -->
+    <div id="adminModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="max-w-md mx-auto mt-20 p-8 bg-gray-900 rounded-2xl">
+            <h3 class="text-2xl font-bold mb-6">Add Product</h3>
+            <input id="productName" placeholder="Product Name" class="w-full p-3 bg-gray-800 rounded-lg mb-4">
+            <input id="productPrice" type="number" placeholder="Price" class="w-full p-3 bg-gray-800 rounded-lg mb-4">
+            <input id="productImage" placeholder="Image URL" class="w-full p-3 bg-gray-800 rounded-lg mb-4">
+            <select id="productCategory" class="w-full p-3 bg-gray-800 rounded-lg mb-6">
+                <option value="wall">Wall Clock</option>
+                <option value="alarm">Alarm Clock</option>
+                <option value="smartwatch">Smartwatch</option>
+            </select>
+            <button id="addProductBtn" class="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded-lg font-semibold transition-all duration-300">Add Product</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
