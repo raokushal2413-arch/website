@@ -1,0 +1,19 @@
+{
+  "name": "clocks-ecommerce",
+  "version": "1.0.0",
+  "description": "Professional Clocks E-Commerce Website",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && nodemon server.js",
+    "frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": ["ecommerce", "clocks", "react", "node"],
+  "author": "BLACKBOXAI",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.0"
+  }
+}
